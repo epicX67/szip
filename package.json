@@ -1,0 +1,34 @@
+{
+  "name": "szip",
+  "version": "1.0.0",
+  "description": "An event based 7zip wrapper for node",
+  "main": "lib/index.js",
+  "types": "lib",
+  "scripts": {
+    "build": "tsc -p ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/epicX67/szip.git"
+  },
+  "keywords": [
+    "7zip",
+    "sevenzip",
+    "zip",
+    "archive",
+    "nodejs",
+    "javascript",
+    "npm",
+    "package"
+  ],
+  "author": "epicX",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/epicX67/szip/issues"
+  },
+  "homepage": "https://github.com/epicX67/szip#readme",
+  "devDependencies": {
+    "@types/node": "^16.3.3",
+    "typescript": "^4.3.5"
+  }
+}
