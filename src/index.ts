@@ -96,26 +96,6 @@ export enum BZIP2_Level {
   ULTRA = " -mx9",
 }
 
-export enum TAR_Method {
-  NONE = "",
-}
-
-export enum TAR_Level {
-  STORE = " -mx0",
-}
-
-export enum WIM_Method {
-  NONE = "",
-}
-
-export enum WIM_Level {
-  STORE = " -mx0",
-}
-
-export enum XZ_Method {
-  LZMA2 = " -mm=LZMA2",
-}
-
 export enum XZ_Level {
   FASTEST = " -mx1",
   FAST = " -mx3",
@@ -142,19 +122,14 @@ interface CompressOptions {
     | ZIP_Method
     | SevenZ_Method
     | GZ_Method
-    | XZ_Method
-    | BZIP2_Method
-    | TAR_Method
-    | WIM_Method;
+    | BZIP2_Method;
   compression_level?:
     | Level
     | ZIP_Level
     | SevenZ_Level
     | GZ_Level
     | XZ_Level
-    | BZIP2_Level
-    | TAR_Level
-    | WIM_Level;
+    | BZIP2_Level;
   encrypt?: boolean;
   encrypt_name?: boolean;
   password?: string;
@@ -184,22 +159,6 @@ interface GZ_CompressOptions {
   //password?: string;
 }
 
-interface TAR_CompressOptions {
-  compression_method?: TAR_Method;
-  compression_level?: TAR_Level;
-  //encrypt?: boolean;
-  //encrypt_name?: false;
-  //password?: string;
-}
-
-interface WIM_CompressOptions {
-  compression_method?: WIM_Method;
-  compression_level?: WIM_Level;
-  //encrypt?: boolean;
-  //encrypt_name?: false;
-  //password?: string;
-}
-
 interface XZ_CompressOptions {
   compression_level?: XZ_Level;
   //encrypt?: boolean;
@@ -219,7 +178,15 @@ interface Operation {
   payload: any;
 }
 
+/**
+ * 7zip class which extends EventEmitter
+ */
 export class SevenZip extends EventEmitter {
+  /**
+   * Creates 7zip object of the class
+   * @param void
+   * @constructor
+   */
   constructor() {
     super();
     this.binary = path7za;
@@ -431,8 +398,6 @@ export class SevenZip extends EventEmitter {
     return str.substring(str.lastIndexOf(".") + 1, str.length);
   }
 
-  // 7z a 'hello.7z' './Extract Here/*' -ph -mhe
-
   // Operation functions
   private compress(
     filePath: string,
@@ -528,7 +493,20 @@ export class SevenZip extends EventEmitter {
     });
   }
 
+  /**
+   * Contains all the function which is required to create any types of archives
+   */
   create = {
+    /**
+     * To Create Zip Archive
+     * @param {string} filePath - Archive path. Ex - foo/bar/hello.zip
+     * @param {string} includeDir - Directory or file which will be added into the archive
+     * @param {ZIP_CompressOptions} options - Options for creating an archive
+     * @param {ZIP_Method} options.compression_method - Compression method for zip
+     * @param {ZIP_Level} options.compression_level - Compression level for zip
+     * @param {boolean} options.encrypt - Enable password into the zip
+     * @param {string} options.password - Add password into the zip
+     */
     zip: (
       filePath: string,
       includeDir: string,
@@ -546,7 +524,18 @@ export class SevenZip extends EventEmitter {
       });
     },
 
-    sevenzip: (
+    /**
+     * To Create 7z Archive
+     * @param {string} filePath - Archive path. Ex - foo/bar/hello.7z
+     * @param {string} includeDir - Directory or file which will be added into the archive
+     * @param {SevenZ_CompressOptions} options - Options for creating an archive
+     * @param {SevenZ_Method} options.compression_method - Compression method for zip
+     * @param {SevenZ_Level} options.compression_level - Compression level for zip
+     * @param {boolean} options.encrypt - Enable password into the 7z
+     * @param {boolean} options.encrypt_name - Enable file name encryption
+     * @param {string} options.password - Add password into the 7z
+     */
+    sevenz: (
       filePath: string,
       includeDir: string,
       options: SevenZ_CompressOptions = {
@@ -563,6 +552,13 @@ export class SevenZip extends EventEmitter {
       });
     },
 
+    /**
+     * To Create gz Archive
+     * @param {string} filePath - Archive path. Ex - foo/bar/hello.gz
+     * @param {string} includeDir - File path which will be added into the archive. Gzip only supports single file. So don't use directory path or mutiple file relative paths
+     * @param {GZ_CompressOptions} options - Options for creating an archive
+     * @param {GZ_Level} options.compression_level - Compression level for gzip
+     */
     gzip: (
       filePath: string,
       includeDir: string,
@@ -580,6 +576,13 @@ export class SevenZip extends EventEmitter {
       });
     },
 
+    /**
+     * To Create bzip2 Archive
+     * @param {string} filePath - Archive path. Ex - foo/bar/hello.bzip2
+     * @param {string} includeDir - File path which will be added into the archive. Gzip only supports single file. So don't use directory path or mutiple file relative paths
+     * @param {BZIP2_CompressOptions} options - Options for creating an archive
+     * @param {BZIP2_Level} options.compression_level - Compression level for bzip2
+     */
     bzip2: (
       filePath: string,
       includeDir: string,
@@ -597,28 +600,45 @@ export class SevenZip extends EventEmitter {
       });
     },
 
+    /**
+     * To Create tar Archive
+     * @param {string} filePath - Archive path. Ex - foo/bar/hello.tar
+     * @param {string} includeDir - Directory or file which will be added into the archive
+     */
     tar: (filePath: string, includeDir: string) => {
       this.compress(filePath, includeDir, {
         archive_type: ArchiveType.TAR,
-        compression_level: TAR_Level.STORE,
-        compression_method: TAR_Method.NONE,
+        compression_level: Level.STORE,
+        compression_method: Method.NONE,
         encrypt: false,
         encrypt_name: false,
         password: "",
       });
     },
 
+    /**
+     * To Create wim Archive
+     * @param {string} filePath - Archive path. Ex - foo/bar/hello.wim
+     * @param {string} includeDir - Directory or file which will be added into the archive
+     */
     wim: (filePath: string, includeDir: string) => {
       this.compress(filePath, includeDir, {
         archive_type: ArchiveType.WIM,
-        compression_level: WIM_Level.STORE,
-        compression_method: WIM_Method.NONE,
+        compression_level: Level.STORE,
+        compression_method: Method.NONE,
         encrypt: false,
         encrypt_name: false,
         password: "",
       });
     },
 
+    /**
+     * To Create xz Archive
+     * @param {string} filePath - Archive path. Ex - foo/bar/hello.xz
+     * @param {string} includeDir - File path which will be added into the archive. Gzip only supports single file. So don't use directory path or mutiple file relative paths
+     * @param {XZ_CompressOptions} options - Options for creating an archive
+     * @param {XZ_Level} options.compression_level - Compression level for xz
+     */
     xz: (
       filePath: string,
       includeDir: string,
@@ -628,7 +648,7 @@ export class SevenZip extends EventEmitter {
     ) => {
       this.compress(filePath, includeDir, {
         archive_type: ArchiveType.XZ,
-        compression_method: XZ_Method.LZMA2,
+        compression_method: Method.LZMA2,
         ...options,
         encrypt: false,
         encrypt_name: false,
@@ -637,6 +657,13 @@ export class SevenZip extends EventEmitter {
     },
   };
 
+  /**
+   * Extract an archive
+   * @param {string} filePath - Archive path. Ex - foo/bar/hello.<extension>
+   * @param {string} outputDir - Folder path where archive is going to be extracted
+   * @param {ExtractOptions} options - Options for extracting an archive
+   * @param {string} options.password - Password if archive password protected
+   */
   extract(
     filePath: string,
     outputDir: string,
@@ -706,12 +733,19 @@ export class SevenZip extends EventEmitter {
     });
   }
 
+  /**
+   * Genarate hash of a file [Event Based]
+   * @param {string} filePath - File path. Ex - foo/bar/hello.<extension>
+   * @param {Hasher} hasher - Hashing algorithm for generating hash of file
+   */
   hash(filePath: string, hasher: Hasher = Hasher.SHA1) {
     // Preparation of Command
     let command = `"${filePath}" ${hasher}`;
     let buffer = "";
 
     const proc = spawn(this.binary, ["h", command], { shell: true });
+
+    let hash = {};
 
     proc.stdout.on("data", (data: Buffer) => {
       const str = data.toString();
@@ -722,10 +756,9 @@ export class SevenZip extends EventEmitter {
         this.emit("onProgress", percentage);
       }
 
-      let hash = this.get_hash(str, hasher === Hasher.ALL);
-      if (hash) {
-        this.emit("onProgress", 100);
-        this.emit("onFinish", { err: 0, buffer, payload: { hash } });
+      let tmp = this.get_hash(str, hasher === Hasher.ALL);
+      if (tmp) {
+        hash = tmp;
       }
     });
 
@@ -733,17 +766,22 @@ export class SevenZip extends EventEmitter {
       const buffstr = data.toString();
       buffer += buffstr;
 
-      this.emit("onFinish", { err: buffstr, buffer, payload: {} });
+      this.emit("onFinish", { err: buffstr, buffer, payload: { hash } });
     });
 
     proc.on("exit", (code: number) => {
       buffer += `\nExit Code :: ${code.toString()}`;
 
       this.emit("onProgress", 100);
-      this.emit("onFinish", { err: code, buffer, payload: {} });
+      this.emit("onFinish", { err: code, buffer, payload: { hash } });
     });
   }
 
+  /**
+   * Genarate hash of a file [Async]
+   * @param {string} filePath - File path. Ex - foo/bar/hello.<extension>
+   * @param {Hasher} hasher - Hashing algorithm for generating hash of file
+   */
   async hash_async(filePath: string, hasher: Hasher = Hasher.CRC32) {
     return new Promise((resolve, reject) => {
       // Preparation of Command
