@@ -124,8 +124,7 @@ export enum XZ_Level {
   ULTRA = " -mx9",
 }
 
-export enum EVENTS {
-  PROCESS = "onProcess",
+export enum EVENT {
   PROGRESS = "onProgress",
   ARCHIVE_INFO = "onArchiveInfo",
   ARCHIVE_STATS = "onArchiveStats",
