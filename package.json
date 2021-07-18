@@ -1,6 +1,6 @@
 {
   "name": "szip",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "An event based 7zip wrapper for node",
   "main": "lib/index.js",
   "types": "lib",
