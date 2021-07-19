@@ -74,13 +74,13 @@ Here is an example below,
 To create an archive you have to use **create.{archivesType}()**
 List of supported archive
 
-- 7z - **create.sevenz()**
-- zip - **create.zip()**
-- gz - **create.gzip()**
-- bzip2 - **create.bzip2()**
-- tar - **create.tar()**
-- wim - **create.wim()**
-- xz - **create.xz()**
+- 7z - **create.sevenz()** or **create.sevenz_async()**
+- zip - **create.zip()** or **create.zip_async()**
+- gz - **create.gzip()** or **create.gzip_async()**
+- bzip2 - **create.bzip2()** or **create.bzip2_async()**
+- tar - **create.tar()** or **create.tar_async()**
+- wim - **create.wim()** or **create.wim_async()**
+- xz - **create.xz()** or **create.xz_async()**
 
 > **Note:** Each function have different option parameters because each archive types doesn't support every features like pasword, encrpyted file name or maybe compression method etc.
 
@@ -118,7 +118,7 @@ To genarate hash of file, you have to use **hash()** or **hash_async()**
 
     const { SevenZip, EVENT, Hasher } =  require("szip");
 
-    const  szip  =  new  SevenZip();
+    const szip = new SevenZip();
 
     szip.on(EVENT.PROGRESS, (data) => {
     	console.log(`Done :: ${data}%`);
@@ -145,9 +145,9 @@ To genarate hash of file, you have to use **hash()** or **hash_async()**
 
 #### Example hash_async()
 
-    const { SevenZip, EVENT, Hasher } =  require("szip");
+    const { SevenZip, Hasher } =  require("szip");
 
-    const  szip  =  new  SevenZip();
+    const szip = new SevenZip();
 
     szip.hash_async("index.js", Hasher.SHA1).then((data) => {
     	console.log(data);
@@ -170,7 +170,52 @@ To genarate hash of file, you have to use **hash()** or **hash_async()**
 Choose any one option from above into the parameter. Hasher.{HashingAlogrithm}
 By default function will use **SHA1** as hashing algorithm if you dont pass hash parameter.
 
-> More functions Like **Testing Archives, Async version of compress and extract** functions are coming soon. If you like this wrapper package please give this repo a star :)
+#### Test integrity of a file
+
+To test integrity of a file, you have to use **test()** or **test_async()**
+
+#### Example of test()
+
+    const { SevenZip, EVENT } =  require("szip");
+
+    const szip = new SevenZip();
+
+    szip.on(EVENT.PROGRESS, (data) => {
+    	console.log(`Done :: ${data}%`);
+    });
+
+    szip.on(EVENT.FINISH, (data) => {
+    	if (data.err) {
+    		console.log(data.err);
+    	} else {
+    		console.log(data.payload);
+    		console.log(`Successfull Operation. Exit Code :: ${data.err}`);
+    	}
+    });
+
+    szip.test("index.js");
+
+#### Example of test_async()
+
+    const { SevenZip } =  require("szip");
+
+    const szip = new SevenZip();
+
+    szip.test_async("index.js").then((data) => {
+    	console.log(data);
+    }).catch((err) => {
+    	console.log(err);
+    });
+
+## Very Important Note
+
+Do not run more than one event based function within same instance at the same time, because all the event based function emits into same event into same instance. But you can run multiple non event based functions (like async ones) within same instance at the same time.
+
+> To avoid this problem create difference instance and then call function into separate instances.
+
+### At last
+
+> If you like this wrapper package please give this repo a star :)
 
 Credits,
 [7zip](https://www.7-zip.org/)
