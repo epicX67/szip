@@ -796,4 +796,87 @@ export class SevenZip extends EventEmitter {
       });
     });
   }
+
+  /**
+   * Archive integrity tester
+   * @param filePath - Archive file path which is going to be tested
+   */
+  test(filePath: string) {
+    // Preparation of Command
+    let command = `"${filePath}"`;
+    let buffer = "";
+
+    const proc = spawn(this.binary, ["t", command, "-y", "-bsp1"], {
+      shell: true,
+    });
+
+    let ok: boolean = false;
+    let archive_info: any = undefined;
+    let archive_stats: any = undefined;
+
+    proc.stdout.on("data", (data: Buffer) => {
+      const str = data.toString();
+      buffer += str;
+
+      let percentage = this.get_percentage(str);
+      if (percentage != undefined) {
+        this.emit("onProgress", percentage);
+      }
+
+      let pre_archive_info = this.get_info(str);
+      if (pre_archive_info) {
+        archive_info = pre_archive_info;
+        this.emit("onArchiveInfo", pre_archive_info);
+      }
+
+      let post_archive_info = this.get_stats(str);
+      if (post_archive_info) {
+        archive_stats = post_archive_info;
+        this.emit("onArchiveStats", post_archive_info);
+      }
+
+      if (!ok) {
+        ok = str.indexOf("Everything is Ok") !== -1;
+      }
+    });
+
+    proc.stderr.on("data", (data: Buffer) => {
+      const buffstr = data.toString();
+      buffer += buffstr;
+
+      this.emit("onFinish", {
+        err: buffstr,
+        buffer,
+        payload: { test: ok, info: archive_info, stats: archive_stats },
+      });
+    });
+
+    proc.on("exit", (code: number) => {
+      buffer += `\nExit Code :: ${code.toString()}`;
+
+      this.emit("onProgress", 100);
+      this.emit("onFinish", {
+        err: code,
+        buffer,
+        payload: { test: ok, info: archive_info, stats: archive_stats },
+      });
+    });
+  }
+
+  /**
+   * Archive integrity tester [Async]
+   * @param filePath - Archive file path which is going to be tested
+   */
+  async test_async(filePath: string) {
+    return new Promise((resolve, reject) => {
+      // Preparation of Command
+      let command = `${this.binary} t "${filePath}"`;
+
+      exec(command, (err: Error, data: any) => {
+        if (err) reject(err);
+        const ret = data.toString().indexOf("Everything is Ok") !== -1;
+        resolve(ret);
+      });
+    });
+  }
 }
