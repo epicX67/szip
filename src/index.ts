@@ -557,8 +557,11 @@ export class SevenZip extends EventEmitter {
     ) => {
       this.compress(filePath, includeDir, {
         archive_type: ArchiveType.ZIP,
-        ...options,
+        compression_method: options?.compression_method || ZIP_Method.LZMA,
+        compression_level: options?.compression_level || ZIP_Level.NORMAL,
         encrypt_name: false,
+        encrypt: options?.encrypt || false,
+        password: options?.password || "",
       });
     },
 
@@ -583,11 +586,13 @@ export class SevenZip extends EventEmitter {
         password: "",
       }
     ) => {
-      console.log(options);
       return this.compress_async(filePath, includeDir, {
         archive_type: ArchiveType.ZIP,
-        ...options,
+        compression_method: options?.compression_method || ZIP_Method.LZMA,
+        compression_level: options?.compression_level || ZIP_Level.NORMAL,
         encrypt_name: false,
+        encrypt: options?.encrypt || false,
+        password: options?.password || "",
       });
     },
 
@@ -615,7 +620,11 @@ export class SevenZip extends EventEmitter {
     ) => {
       this.compress(filePath, includeDir, {
         archive_type: ArchiveType.SevenZIP,
-        ...options,
+        compression_method: options?.compression_method || SevenZ_Method.LZMA2,
+        compression_level: options?.compression_level || SevenZ_Level.NORMAL,
+        encrypt: options?.encrypt || false,
+        encrypt_name: options?.encrypt_name || false,
+        password: options?.password || "",
       });
     },
 
@@ -644,7 +653,11 @@ export class SevenZip extends EventEmitter {
     ) => {
       return this.compress_async(filePath, includeDir, {
         archive_type: ArchiveType.SevenZIP,
-        ...options,
+        compression_method: options?.compression_method || SevenZ_Method.LZMA2,
+        compression_level: options?.compression_level || SevenZ_Level.NORMAL,
+        encrypt: options?.encrypt || false,
+        encrypt_name: options?.encrypt_name || false,
+        password: options?.password || "",
       });
     },
 
@@ -665,7 +678,7 @@ export class SevenZip extends EventEmitter {
       this.compress(filePath, includeDir, {
         archive_type: ArchiveType.GZIP,
         compression_method: GZ_Method.Deflate,
-        ...options,
+        compression_level: options?.compression_level || GZ_Level.NORMAL,
         encrypt: false,
         encrypt_name: false,
         password: "",
@@ -690,7 +703,7 @@ export class SevenZip extends EventEmitter {
       return this.compress_async(filePath, includeDir, {
         archive_type: ArchiveType.GZIP,
         compression_method: GZ_Method.Deflate,
-        ...options,
+        compression_level: options?.compression_level || GZ_Level.NORMAL,
         encrypt: false,
         encrypt_name: false,
         password: "",
@@ -714,7 +727,7 @@ export class SevenZip extends EventEmitter {
       this.compress(filePath, includeDir, {
         archive_type: ArchiveType.BZIP2,
         compression_method: BZIP2_Method.BZip2,
-        ...options,
+        compression_level: options?.compression_level || BZIP2_Level.NORMAL,
         encrypt: false,
         encrypt_name: false,
         password: "",
@@ -739,7 +752,7 @@ export class SevenZip extends EventEmitter {
       return this.compress_async(filePath, includeDir, {
         archive_type: ArchiveType.BZIP2,
         compression_method: BZIP2_Method.BZip2,
-        ...options,
+        compression_level: options?.compression_level || BZIP2_Level.NORMAL,
         encrypt: false,
         encrypt_name: false,
         password: "",
@@ -829,7 +842,7 @@ export class SevenZip extends EventEmitter {
       this.compress(filePath, includeDir, {
         archive_type: ArchiveType.XZ,
         compression_method: Method.LZMA2,
-        ...options,
+        compression_level: options?.compression_level || XZ_Level.NORMAL,
         encrypt: false,
         encrypt_name: false,
         password: "",
@@ -854,7 +867,7 @@ export class SevenZip extends EventEmitter {
       return this.compress_async(filePath, includeDir, {
         archive_type: ArchiveType.XZ,
         compression_method: Method.LZMA2,
-        ...options,
+        compression_level: options?.compression_level || XZ_Level.NORMAL,
         encrypt: false,
         encrypt_name: false,
         password: "",
