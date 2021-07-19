@@ -493,6 +493,44 @@ export class SevenZip extends EventEmitter {
     });
   }
 
+  private compress_async(
+    filePath: string,
+    includeDir: string,
+    options: CompressOptions = {
+      archive_type: ArchiveType.ZIP,
+      compression_method: Method.NONE,
+      compression_level: Level.NORMAL,
+      encrypt: false,
+      encrypt_name: false,
+      password: "",
+    }
+  ) {
+    return new Promise((resolve, reject) => {
+      // Preparation of Command
+      let command = `${this.binary} a ${options.archive_type} "${filePath}" "${includeDir}" -y ${options.compression_level} ${options.compression_method}`;
+
+      const extension = this.get_extension(filePath);
+
+      if (extension !== "gz" && options.encrypt && options.password) {
+        command += ` -p${options.password}`;
+      }
+
+      if (extension !== "gz" && options.encrypt && options.encrypt_name) {
+        command += ` -mhe`;
+      }
+
+      exec(command, (err: Error, data: any) => {
+        if (err) reject(err);
+
+        resolve({
+          info: this.get_info(data),
+          stats: this.get_stats(data),
+          buffer: data,
+        });
+      });
+    });
+  }
+
   /**
    * Contains all the function which is required to create any types of archives
    */
@@ -518,6 +556,35 @@ export class SevenZip extends EventEmitter {
       }
     ) => {
       this.compress(filePath, includeDir, {
+        archive_type: ArchiveType.ZIP,
+        ...options,
+        encrypt_name: false,
+      });
+    },
+
+    /**
+     * To Create Zip Archive [Async]
+     * @param {string} filePath - Archive path. Ex - foo/bar/hello.zip
+     * @param {string} includeDir - Directory or file which will be added into the archive
+     * @param {ZIP_CompressOptions} options - Options for creating an archive
+     * @param {ZIP_Method} options.compression_method - Compression method for zip
+     * @param {ZIP_Level} options.compression_level - Compression level for zip
+     * @param {boolean} options.encrypt - Enable password into the zip
+     * @param {string} options.password - Add password into the zip
+     * @returns {Promise}
+     */
+    zip_async: (
+      filePath: string,
+      includeDir: string,
+      options: ZIP_CompressOptions = {
+        compression_method: ZIP_Method.LZMA,
+        compression_level: ZIP_Level.NORMAL,
+        encrypt: false,
+        password: "",
+      }
+    ) => {
+      console.log(options);
+      return this.compress_async(filePath, includeDir, {
         archive_type: ArchiveType.ZIP,
         ...options,
         encrypt_name: false,
@@ -553,6 +620,35 @@ export class SevenZip extends EventEmitter {
     },
 
     /**
+     * To Create 7z Archive [Async]
+     * @param {string} filePath - Archive path. Ex - foo/bar/hello.7z
+     * @param {string} includeDir - Directory or file which will be added into the archive
+     * @param {SevenZ_CompressOptions} options - Options for creating an archive
+     * @param {SevenZ_Method} options.compression_method - Compression method for zip
+     * @param {SevenZ_Level} options.compression_level - Compression level for zip
+     * @param {boolean} options.encrypt - Enable password into the 7z
+     * @param {boolean} options.encrypt_name - Enable file name encryption
+     * @param {string} options.password - Add password into the 7z
+     * @returns {Promise}
+     */
+    sevenz_async: (
+      filePath: string,
+      includeDir: string,
+      options: SevenZ_CompressOptions = {
+        compression_method: SevenZ_Method.LZMA2,
+        compression_level: SevenZ_Level.NORMAL,
+        encrypt: false,
+        encrypt_name: false,
+        password: "",
+      }
+    ) => {
+      return this.compress_async(filePath, includeDir, {
+        archive_type: ArchiveType.SevenZIP,
+        ...options,
+      });
+    },
+
+    /**
      * To Create gz Archive
      * @param {string} filePath - Archive path. Ex - foo/bar/hello.gz
      * @param {string} includeDir - File path which will be added into the archive. Gzip only supports single file. So don't use directory path or mutiple file relative paths
@@ -567,6 +663,31 @@ export class SevenZip extends EventEmitter {
       }
     ) => {
       this.compress(filePath, includeDir, {
+        archive_type: ArchiveType.GZIP,
+        compression_method: GZ_Method.Deflate,
+        ...options,
+        encrypt: false,
+        encrypt_name: false,
+        password: "",
+      });
+    },
+
+    /**
+     * To Create gz Archive [Async]
+     * @param {string} filePath - Archive path. Ex - foo/bar/hello.gz
+     * @param {string} includeDir - File path which will be added into the archive. Gzip only supports single file. So don't use directory path or mutiple file relative paths
+     * @param {GZ_CompressOptions} options - Options for creating an archive
+     * @param {GZ_Level} options.compression_level - Compression level for gzip
+     * @returns {Promise}
+     */
+    gzip_async: (
+      filePath: string,
+      includeDir: string,
+      options: GZ_CompressOptions = {
+        compression_level: GZ_Level.NORMAL,
+      }
+    ) => {
+      return this.compress_async(filePath, includeDir, {
         archive_type: ArchiveType.GZIP,
         compression_method: GZ_Method.Deflate,
         ...options,
@@ -601,12 +722,54 @@ export class SevenZip extends EventEmitter {
     },
 
     /**
+     * To Create bzip2 Archive [Async]
+     * @param {string} filePath - Archive path. Ex - foo/bar/hello.bzip2
+     * @param {string} includeDir - File path which will be added into the archive. Gzip only supports single file. So don't use directory path or mutiple file relative paths
+     * @param {BZIP2_CompressOptions} options - Options for creating an archive
+     * @param {BZIP2_Level} options.compression_level - Compression level for bzip2
+     * @returns {Promise}
+     */
+    bzip2_async: (
+      filePath: string,
+      includeDir: string,
+      options: BZIP2_CompressOptions = {
+        compression_level: BZIP2_Level.NORMAL,
+      }
+    ) => {
+      return this.compress_async(filePath, includeDir, {
+        archive_type: ArchiveType.BZIP2,
+        compression_method: BZIP2_Method.BZip2,
+        ...options,
+        encrypt: false,
+        encrypt_name: false,
+        password: "",
+      });
+    },
+
+    /**
      * To Create tar Archive
      * @param {string} filePath - Archive path. Ex - foo/bar/hello.tar
      * @param {string} includeDir - Directory or file which will be added into the archive
      */
     tar: (filePath: string, includeDir: string) => {
       this.compress(filePath, includeDir, {
+        archive_type: ArchiveType.TAR,
+        compression_level: Level.STORE,
+        compression_method: Method.NONE,
+        encrypt: false,
+        encrypt_name: false,
+        password: "",
+      });
+    },
+
+    /**
+     * To Create tar Archive [Async]
+     * @param {string} filePath - Archive path. Ex - foo/bar/hello.tar
+     * @param {string} includeDir - Directory or file which will be added into the archive
+     * @returns {Promise}
+     */
+    tar_async: (filePath: string, includeDir: string) => {
+      return this.compress_async(filePath, includeDir, {
         archive_type: ArchiveType.TAR,
         compression_level: Level.STORE,
         compression_method: Method.NONE,
@@ -633,6 +796,23 @@ export class SevenZip extends EventEmitter {
     },
 
     /**
+     * To Create wim Archive [Async]
+     * @param {string} filePath - Archive path. Ex - foo/bar/hello.wim
+     * @param {string} includeDir - Directory or file which will be added into the archive
+     * @returns {Promise}
+     */
+    wim_async: (filePath: string, includeDir: string) => {
+      return this.compress_async(filePath, includeDir, {
+        archive_type: ArchiveType.WIM,
+        compression_level: Level.STORE,
+        compression_method: Method.NONE,
+        encrypt: false,
+        encrypt_name: false,
+        password: "",
+      });
+    },
+
+    /**
      * To Create xz Archive
      * @param {string} filePath - Archive path. Ex - foo/bar/hello.xz
      * @param {string} includeDir - File path which will be added into the archive. Gzip only supports single file. So don't use directory path or mutiple file relative paths
@@ -647,6 +827,31 @@ export class SevenZip extends EventEmitter {
       }
     ) => {
       this.compress(filePath, includeDir, {
+        archive_type: ArchiveType.XZ,
+        compression_method: Method.LZMA2,
+        ...options,
+        encrypt: false,
+        encrypt_name: false,
+        password: "",
+      });
+    },
+
+    /**
+     * To Create xz Archive [Async]
+     * @param {string} filePath - Archive path. Ex - foo/bar/hello.xz
+     * @param {string} includeDir - File path which will be added into the archive. Gzip only supports single file. So don't use directory path or mutiple file relative paths
+     * @param {XZ_CompressOptions} options - Options for creating an archive
+     * @param {XZ_Level} options.compression_level - Compression level for xz
+     * @returns {Promise}
+     */
+    xz_async: (
+      filePath: string,
+      includeDir: string,
+      options: XZ_CompressOptions = {
+        compression_level: XZ_Level.NORMAL,
+      }
+    ) => {
+      return this.compress_async(filePath, includeDir, {
         archive_type: ArchiveType.XZ,
         compression_method: Method.LZMA2,
         ...options,
@@ -729,6 +934,38 @@ export class SevenZip extends EventEmitter {
           info: { ...archive_info },
           stats: { ...archive_stats },
         },
+      });
+    });
+  }
+
+  /**
+   * Extract an archive [Async]
+   * @param {string} filePath - Archive path. Ex - foo/bar/hello.<extension>
+   * @param {string} outputDir - Folder path where archive is going to be extracted
+   * @param {ExtractOptions} options - Options for extracting an archive
+   * @param {string} options.password - Password if archive password protected
+   */
+  extract_async(
+    filePath: string,
+    outputDir: string,
+    options: ExtractOptions = { password: "" }
+  ) {
+    return new Promise((resolve, reject) => {
+      // Preparation of Command
+      let command = `${this.binary} x "${filePath}" -o"${outputDir}" -y`;
+
+      if (options.password) {
+        command += ` -p${options.password}`;
+      }
+
+      exec(command, (err: Error, data: any) => {
+        if (err) reject(err);
+
+        resolve({
+          info: this.get_info(data),
+          stats: this.get_stats(data),
+          buffer: data,
+        });
       });
     });
   }
