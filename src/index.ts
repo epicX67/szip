@@ -743,7 +743,9 @@ export class SevenZip extends EventEmitter {
     let command = `"${filePath}" ${hasher}`;
     let buffer = "";
 
-    const proc = spawn(this.binary, ["h", command], { shell: true });
+    const proc = spawn(this.binary, ["h", command, "-y", "-bsp1"], {
+      shell: true,
+    });
 
     let hash = {};
 
