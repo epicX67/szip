@@ -784,7 +784,7 @@ export class SevenZip extends EventEmitter {
    * @param {string} filePath - File path. Ex - foo/bar/hello.<extension>
    * @param {Hasher} hasher - Hashing algorithm for generating hash of file
    */
-  async hash_async(filePath: string, hasher: Hasher = Hasher.CRC32) {
+  async hash_async(filePath: string, hasher: Hasher = Hasher.SHA1) {
     return new Promise((resolve, reject) => {
       // Preparation of Command
       let command = `${this.binary} h "${filePath}" ${hasher}`;
