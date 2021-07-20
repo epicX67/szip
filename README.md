@@ -40,6 +40,58 @@ This event receives when operation finished.
     	// 	data.payload {object} contains any information about result.
     });
 
+### Basic Execution function
+
+By using this function you can execute any 7zip cli commands.
+
+- **run()**
+- **run_async()**
+
+### Example run()
+
+    const { SevenZip, EVENT } = require("szip");
+
+    const szip = new SevenZip();
+
+    szip.on(EVENT.PROGRESS, (data) => {
+        console.log(`Done :: ${data}%`);
+    });
+
+    szip.on(EVENT.FINISH, (data) => {
+        if (data.err) {
+            console.log(data.err);
+        } else {
+            console.log(data.payload);
+            console.log(`Successfull Operation. Exit Code :: ${data.err}`);
+        }
+    });
+
+    szip.run(`t "index.zip"`);
+
+### Example run_async()
+
+    const { SevenZip, EVENT } = require("szip");
+
+    const szip = new SevenZip();
+
+    szip.run_async(`t "./index.zip"`).then((data) => {
+        console.log(data);
+    }).catch((err) => {
+        console.log(err);
+    });
+
+> **Note:** You don't have to put binary name into args parameter.
+
+## High Level functions
+
+These functions are created for easier implementation of 7zip.
+Currently package have these operations in this category,
+
+- Extract
+- Add Archive
+- Genarate Hash
+- Test Integrity of Archive
+
 ### Extract File
 
 To extract a file you have use **extract** function from sevenzip class.
@@ -211,7 +263,7 @@ To test integrity of a file, you have to use **test()** or **test_async()**
 
 Do not run more than one event based function within same instance at the same time, because all the event based function emits into same event into same instance. But you can run multiple non event based functions (like async ones) within same instance at the same time.
 
-> To avoid this problem create difference instance and then call function into separate instances.
+> To avoid this problem create different instance and then call function from separate instances.
 
 ### At last
 
