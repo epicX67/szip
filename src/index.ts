@@ -1129,4 +1129,83 @@ export class SevenZip extends EventEmitter {
       });
     });
   }
+
+  /**
+   * Function for any 7zip operation which you want to do manually
+   * @param args - Arguments of command. Note : Dont put binary name in args. Binary name will be added while calling.
+   */
+  run(args: string) {
+    // Preparation of args
+    if (args.indexOf("-bsp1") === -1) {
+      args += " -bsp1";
+    }
+
+    const proc = spawn(this.binary, [args], {
+      shell: true,
+    });
+
+    let buffer = "";
+    let archive_info: any = undefined;
+    let archive_stats: any = undefined;
+
+    proc.stdout.on("data", (data: Buffer) => {
+      const str = data.toString();
+      buffer += str;
+
+      let percentage = this.get_percentage(str);
+      if (percentage != undefined) {
+        this.emit("onProgress", percentage);
+      }
+
+      let pre_archive_info = this.get_info(str);
+      if (pre_archive_info) {
+        archive_info = pre_archive_info;
+        this.emit("onArchiveInfo", pre_archive_info);
+      }
+
+      let post_archive_info = this.get_stats(str);
+      if (post_archive_info) {
+        archive_stats = post_archive_info;
+        this.emit("onArchiveStats", post_archive_info);
+      }
+    });
+
+    proc.stderr.on("data", (data: Buffer) => {
+      const buffstr = data.toString();
+      buffer += buffstr;
+
+      this.emit("onFinish", {
+        err: buffstr,
+        buffer,
+        payload: { info: archive_info, stats: archive_stats },
+      });
+    });
+
+    proc.on("exit", (code: number) => {
+      buffer += `\nExit Code :: ${code.toString()}`;
+
+      this.emit("onProgress", 100);
+      this.emit("onFinish", {
+        err: code,
+        buffer,
+        payload: { info: archive_info, stats: archive_stats },
+      });
+    });
+  }
+
+  /**
+   * Function for any 7zip operation which you want to do manually [Async]
+   * @param args - Arguments of command. Note : Dont put binary name in args. Binary name will be added while calling.
+   */
+  async run_async(args: string) {
+    return new Promise((resolve, reject) => {
+      // Preparation of Command
+      let command = `${this.binary} ${args}`;
+
+      exec(command, (err: Error, data: any) => {
+        if (err) reject(err);
+        resolve(data);
+      });
+    });
+  }
 }
